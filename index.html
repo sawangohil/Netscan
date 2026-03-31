@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NetScan — Third-Party Network Analyzer</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"/>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <script src="script.js"></script>
+    <div class="app">
+      <header>
+        <div class="logo">
+          <div class="logo-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#000"
+              stroke-width="2.5"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path
+                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+              />
+              <path d="M2 12h20" />
+            </svg>
+          </div>
+          <div>
+            <h1>NetScan</h1>
+            <span>Third-Party Network Analyzer</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="info-note">
+        ℹ️ This prototype uses <strong>simulated real-world profiles</strong> of
+        popular websites. Select a preset below to analyze which third-party
+        services they load, how much data each consumes, and their
+        privacy/security risk ratings.
+      </div>
+
+      <div class="scan-section">
+        <div class="scan-title">// analyze website</div>
+        <div class="input-row">
+          <input
+            class="url-input"
+            id="urlInput"
+            type="text"
+            placeholder="https://example.com"
+            value="https://amazon.com"
+          />
+          <button class="btn" onclick="runScan()">⚡ SCAN</button>
+          <button class="btn-secondary" onclick="clearResults()">CLEAR</button>
+        </div>
+        <div class="presets">
+          <span
+            style="
+              font-size: 11px;
+              color: var(--muted);
+              padding: 5px 0;
+              font-family: var(--mono);
+            "
+            >PRESETS →</span>
+          <div class="preset" onclick="loadPreset('amazon')">amazon.com</div>
+          <div class="preset" onclick="loadPreset('news')">news site</div>
+          <div class="preset" onclick="loadPreset('banking')">banking site</div>
+          <div class="preset" onclick="loadPreset('social')">social media</div>
+          <div class="preset" onclick="loadPreset('ecommerce')">e-commerce</div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="statsGrid" style="display: none">
+        <div class="stat-card blue">
+          <div class="stat-label">Total Requests</div>
+          <div class="stat-value" id="statRequests">0</div>
+          <div class="stat-sub" id="statSub1">third-party calls</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Data Transferred</div>
+          <div class="stat-value" id="statData">0</div>
+          <div class="stat-sub" id="statSub2">total KB</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Privacy Risk</div>
+          <div class="stat-value" id="statPrivacy">—</div>
+          <div class="stat-sub">tracking potential</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">High-Risk Services</div>
+          <div class="stat-value" id="statHighRisk">0</div>
+          <div class="stat-sub">require attention</div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <div class="main-grid" id="mainGrid" style="display: none">
+        <!-- Left: Table -->
+        <div>
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <div class="panel-title">Third-Party Services Detected</div>
+                <div class="panel-sub" id="tableSubtitle">Loading...</div>
+              </div>
+              <div class="filter-tabs">
+                <button class="ftab active" onclick="filterTable('all', this)">
+                  All
+                </button>
+                <button class="ftab" onclick="filterTable('high', this)">
+                  High Risk
+                </button>
+                <button class="ftab" onclick="filterTable('tracker', this)">
+                  Trackers
+                </button>
+              </div>
+            </div>
+            <div id="tableContainer">
+              <div class="scanning">
+                <div class="spin"></div>
+                Analyzing...
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom panels -->
+          <div class="bottom-grid" style="margin-top: 16px" id="bottomPanels">
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Data by Category</div>
+              </div>
+              <div style="padding: 0 20px 8px" id="catList"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-header">
+                <div class="panel-title">Preventive Measures</div>
+              </div>
+              <div
+                style="
+                  padding: 12px 20px 16px;
+                  font-size: 12px;
+                  color: var(--muted);
+                  line-height: 1.8;
+                "
+                id="preventList"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Col -->
+        <div class="right-col">
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Data Usage Breakdown</div>
+            </div>
+            <div class="donut-wrap">
+              <svg
+                id="donutSvg"
+                width="160"
+                height="160"
+                viewBox="0 0 160 160"
+              ></svg>
+              <div class="donut-center">
+                <div class="donut-center-val" id="donutTotal">—</div>
+                <div class="donut-center-label">KB total</div>
+              </div>
+            </div>
+            <div class="legend" id="donutLegend"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Privacy Score</div>
+            </div>
+            <div class="score-ring-wrap">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.06)"
+                  stroke-width="10"
+                />
+                <circle
+                  id="scoreArc"
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="#ef4444"
+                  stroke-width="10"
+                  stroke-linecap="round"
+                  stroke-dasharray="264"
+                  stroke-dashoffset="264"
+                  transform="rotate(-90 50 50)"
+                  style="
+                    transition:
+                      stroke-dashoffset 1s ease,
+                      stroke 0.5s;
+                  "
+                />
+              </svg>
+              <div
+                class="score-label-big"
+                id="scoreVal"
+                style="color: var(--danger)"
+              >
+                —
+              </div>
+              <div class="score-desc" id="scoreDesc">
+                Scan a site to see privacy score
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Security Risks Found</div>
+            </div>
+            <div class="risk-list" id="riskList">
+              <div
+                style="
+                  padding: 24px;
+                  text-align: center;
+                  color: var(--muted);
+                  font-size: 13px;
+                "
+              >
+                Run a scan to see risks
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="panel">
+        <div class="empty">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">No scan running</div>
+          <div class="empty-desc">
+            Select a preset or enter a URL above and click SCAN to analyze which
+            third-party services are loaded, how much data they use, and their
+            privacy and security risk levels.
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
